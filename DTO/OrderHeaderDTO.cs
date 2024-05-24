@@ -8,8 +8,8 @@ namespace OrderApi.DTO
     public class OrderHeaderDTO
     {
         public int OrderHeaderID { get; set; }
-        public int CustomerID { get; set; }
-        public string? CustomerName { get; set; }
+        public string username { get; set; }
+
         public DateTime OrderDate { get; set; }
     }
 }

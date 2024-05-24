@@ -40,26 +40,25 @@ namespace OrderApi.DAL
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
                 var strSql = @"SELECT * FROM OrderDetails WHERE OrderDetailId = @OrderDetailId";
-                    var OrderDetail = conn.QuerySingleOrDefault<OrderDetail>(strSql, new {OrderDetailId = id});
-                    if(OrderDetail == null)
-                    {
-                        throw new ArgumentException("Data tidak ditemukan");
-                    }
-                        return OrderDetail;
+                var OrderDetail = conn.QuerySingleOrDefault<OrderDetail>(strSql, new { OrderDetailId = id });
+                if (OrderDetail == null)
+                {
+                    throw new ArgumentException("Data tidak ditemukan");
+                }
+                return OrderDetail;
             }
         }
 
-        public OrderDetail Insert(OrderDetail obj)
+        public void Insert(OrderDetail obj)
         {
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
                 var strSql = @"INSERT INTO OrderDetails (OrderHeaderId, ProductId, Quantity, Price) VALUES (@OrderHeaderId, @ProductId, @Quantity, @Price); select @@IDENTITY";
-                var param = new {OrderHeaderId = obj.OrderHeaderId, ProductId = obj.ProductId, Quantity = obj.Quantity, Price = obj.Price};
+                var param = new { OrderHeaderId = obj.OrderHeaderId, ProductId = obj.ProductId, Quantity = obj.Quantity, Price = obj.Price };
                 try
                 {
-                    var newId = conn.ExecuteScalar<int>(strSql, param);
-                    obj.OrderDetailId = newId;
-                    return obj;
+                    conn.Execute(strSql, param);
+
                 }
                 catch (SqlException sqlEx)
                 {
@@ -73,7 +72,7 @@ namespace OrderApi.DAL
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
                 var strSql = @"UPDATE OrderDetails SET OrderHeaderId = @OrderHeaderId, ProductId = @ProductId, Quantity = @Quantity, Price = @Price";
-                var param = new {OrderHeaderId = obj.OrderHeaderId, ProductId = obj.ProductId, Quantity = obj.Quantity, Price = obj.Price};
+                var param = new { OrderHeaderId = obj.OrderHeaderId, ProductId = obj.ProductId, Quantity = obj.Quantity, Price = obj.Price };
                 try
                 {
                     var newId = conn.ExecuteScalar<int>(strSql, param);

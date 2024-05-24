@@ -7,9 +7,9 @@ namespace OrderApi.DAL.Interface
 {
     public interface ICrud<T>
     {
-        IEnumerable<T>GetAll();
+        IEnumerable<T> GetAll();
         T GetById(int id);
-        T Insert(T obj);
+        void Insert(T obj);
         void Update(T obj);
         void Delete(int id);
     }

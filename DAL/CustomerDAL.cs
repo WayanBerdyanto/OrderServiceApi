@@ -65,17 +65,16 @@ namespace OrderApi.DAL
             }
         }
 
-        public Customer Insert(Customer obj)
+        public void Insert(Customer obj)
         {
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
                 var strSql = @"INSERT INTO Customers (CustomerName) VALUES (@CustomerName); select @@IDENTITY";
+                var param =  new { CustomerName = obj.CustomerName };
                 try
                 {
-                    var newId = conn.ExecuteScalar<int>(strSql, new { CustomerName = obj.CustomerName });
-                    obj.CustomerID = newId;
-                    return obj;
-                }
+                    conn.Execute(strSql, param);
+                }   
                 catch (SqlException sqlEx)
                 {
                     throw new ArgumentException($"Error: {sqlEx.Message} - {sqlEx.Number}");

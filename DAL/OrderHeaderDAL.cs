@@ -21,21 +21,19 @@ namespace OrderApi.DAL
             throw new NotImplementedException();
         }
 
-        public OrderHeader Insert(OrderHeader obj)
+        public void Insert(OrderHeader obj)
         {
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
-                var strSql = @"INSERT INTO OrderHeaders (CustomerId, OrderDate) VALUES (@CustomerId, @OrderDate); select @@IDENTITY";
+                var strSql = @"INSERT INTO OrderHeaders (UserName, OrderDate) VALUES (@UserName, @OrderDate); select @@IDENTITY";
                 var param = new
                 {
-                    CustomerID = obj.CustomerID,
+                    UserName = obj.UserName,
                     OrderDate = obj.OrderDate,
                 };
                 try
                 {
-                    var newId = conn.ExecuteScalar<int>(strSql, param);
-                    obj.OrderHeaderID = newId;
-                    return obj;
+                    conn.Execute(strSql, param);
                 }
                 catch (SqlException sqlEx)
                 {
@@ -50,7 +48,20 @@ namespace OrderApi.DAL
 
         public void Update(OrderHeader obj)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            {
+                var strSql = @"UPDATE OrderHeaders SET UserName = @UserName, OrderDate = @OrderDate";
+                var param = new { UserName = obj.UserName, OrderDate = obj.OrderDate};
+                try
+                {
+                    var newId = conn.ExecuteScalar<string>(strSql, param);
+                    obj.UserName = newId;
+                }
+                catch (SqlException sqlEx)
+                {
+                    throw new ArgumentException(sqlEx.Message);
+                }
+            }
         }
 
         IEnumerable<OrderHeader> ICrud<OrderHeader>.GetAll()

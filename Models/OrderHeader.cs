@@ -8,8 +8,7 @@ namespace OrderApi.Models
     public class OrderHeader
     {
         public int OrderHeaderID { get; set; }
-        public int CustomerID { get; set; }
-        public string? CustomerName { get; set; }
+        public string? UserName { get; set; }
         public DateTime OrderDate { get; set; }
     }
 }

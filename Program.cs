@@ -12,13 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+// , IOrderHeader orderHeader, UserService userService
 builder.Services.AddScoped<ICustomer, CustomerDAL>();
 builder.Services.AddScoped<IOrderHeader, OrderHeaderDAL>();
 builder.Services.AddScoped<IOrderDetail, OrderDetailDAL>();
 
 //register HttpClient
 builder.Services.AddHttpClient<IProductService, ProductService>().AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(6000)));
+
+builder.Services.AddHttpClient<IUserService, UserService>().AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(6000)));
 
 var app = builder.Build();
 
@@ -30,35 +32,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapGet("/customers", (ICustomer customer) => 
-{
-    return Results.Ok(customer.GetAll());
-});
-
-
-app.MapGet("/customers/{id}", (ICustomer customer, int id) =>
-{
-    var cust = customer.GetById(id);
-    if (cust == null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(cust);
-});
-
-app.MapPost("/customers", (ICustomer customer, Customer obj) =>
-{
-    try
-    {
-        var cust = customer.Insert(obj);
-        return Results.Created($"/customer{obj.CustomerID}", cust);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(ex.Message);
-    }
-});
 
 app.MapGet("/orderHeaders", (IOrderHeader orderHeader) =>
 {
@@ -76,11 +49,21 @@ app.MapGet("/orderHeaders/{id}", (IOrderHeader orderHeader, int id) =>
     return Results.Ok(order);
 });
 
-app.MapPost("/orderHeaders", (IOrderHeader orderHeader, OrderHeader obj) =>
+app.MapPost("/orderHeaders", async (IOrderHeader orderHeader, IUserService userService, OrderHeaderDTO obj) =>
 {
     try
     {
-        var order = orderHeader.Insert(obj);
+        var user = await userService.GetProductByName(obj.username);
+        if (user == null)
+        {
+            return Results.BadRequest("data not found");
+        }
+        OrderHeader order = new OrderHeader
+        {
+            UserName = obj.username,
+            OrderDate = obj.OrderDate,
+        };
+        orderHeader.Insert(order);
         return Results.Created($"/orderHeaders/{obj.OrderHeaderID}", order);
     }
     catch (Exception ex)
@@ -104,7 +87,7 @@ app.MapGet("/orderDetails/{id}", (IOrderDetail orderDetail, int id) =>
     return Results.Ok(order);
 });
 
-app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetail obj)=>
+app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetailDTO obj, IOrderHeader orderHeader, IUserService userService) =>
 {
     try
     {
@@ -117,16 +100,34 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
         {
             return Results.BadRequest("Stock not enough");
         }
-        obj.Price = product.price;
-        var order = orderDetail.Insert(obj);
+        var order = orderHeader.GetById(obj.OrderHeaderId);
+        if (order == null)
+        {
+            return Results.BadRequest("Order Header not found");
+        }
+        obj.Price = obj.Quantity * product.price;
+        OrderDetail detail = new OrderDetail
+        {
+            OrderHeaderId = obj.OrderHeaderId,
+            ProductId = obj.ProductId,
+            Quantity = obj.Quantity,
+            Price = obj.Price
+        };
+        orderDetail.Insert(detail);
         var productUpdateStockDto = new ProductUpdateStockDto
         {
             ProductID = obj.ProductId,
             Quantity = obj.Quantity
         };
-        // return Results.Ok(productUpdateStockDto);
+        var userUpdateBalance = new UserUpdateBalance
+        {
+            UserName = order.UserName,
+            Balance = obj.Price
+        };
+
         await productService.UpdateProductStock(productUpdateStockDto);
-        return Results.Created($"/orderDetails/{obj.OrderDetailId}", order);
+        await userService.UpdateUserBalance(userUpdateBalance);
+        return Results.Created($"/orderDetails/{detail.OrderDetailId}", detail);
     }
     catch (Exception ex)
     {
@@ -134,7 +135,7 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
     }
 });
 
-app.MapPut("/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetail obj) =>
+app.MapPut("/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetail obj, IOrderHeader orderHeader, IUserService userService) =>
 {
     try
     {
@@ -147,8 +148,35 @@ app.MapPut("/orderDetails", async (IOrderDetail orderDetail, IProductService pro
         {
             return Results.BadRequest("Stock not enough");
         }
-        obj.Price = product.price;
+        var order = orderHeader.GetById(obj.OrderHeaderId);
+        if (order == null)
+        {
+            return Results.BadRequest("Order Header not found");
+        }
+        obj.Price = obj.Quantity * product.price;
+        OrderDetail detail = new OrderDetail
+        {
+            OrderHeaderId = obj.OrderHeaderId,
+            ProductId = obj.ProductId,
+            Quantity = obj.Quantity,
+            Price = obj.Price
+        };
         orderDetail.Update(obj);
+
+        var productUpdateStockDto = new ProductUpdateStockDto
+        {
+            ProductID = obj.ProductId,
+            Quantity = obj.Quantity
+        };
+        var userUpdateBalance = new UserUpdateBalance
+        {
+            UserName = order.UserName,
+            Balance = obj.Price
+        };
+        await productService.UpdateProductStock(productUpdateStockDto);
+        await userService.UpdateUserBalance(userUpdateBalance);
+        return Results.Created($"/orderDetails/{detail.OrderDetailId}", detail);
+
         return Results.Created($"/orderDetails/{obj.OrderDetailId}", obj);
     }
     catch (Exception ex)
