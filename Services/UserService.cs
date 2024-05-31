@@ -38,7 +38,7 @@ namespace OrderApi.Services
             }
         }
 
-        public async Task<User> GetProductByName(string username)
+        public async Task<User> GetUserByName(string username)
         {
             var response = await _httpClient.GetAsync($"/users/{username}");
             if (response.IsSuccessStatusCode)

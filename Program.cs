@@ -53,7 +53,7 @@ app.MapPost("/orderHeaders", async (IOrderHeader orderHeader, IUserService userS
 {
     try
     {
-        var user = await userService.GetProductByName(obj.username);
+        var user = await userService.GetUserByName(obj.username);
         if (user == null)
         {
             return Results.BadRequest("data not found");
@@ -105,6 +105,7 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
         {
             return Results.BadRequest("Order Header not found");
         }
+        
         obj.Price = obj.Quantity * product.price;
         OrderDetail detail = new OrderDetail
         {
