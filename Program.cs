@@ -105,7 +105,7 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
         {
             return Results.BadRequest("Order Header not found");
         }
-        
+
         obj.Price = obj.Quantity * product.price;
         OrderDetail detail = new OrderDetail
         {
@@ -120,6 +120,11 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
             ProductID = obj.ProductId,
             Quantity = obj.Quantity
         };
+
+        // if (obj.Price > userUpdateBalance.Balance )
+        // {
+        //     return Results.BadRequest("Stock not enough");
+        // }
         var userUpdateBalance = new UserUpdateBalance
         {
             UserName = order.UserName,

@@ -16,7 +16,7 @@ namespace OrderApi.Services
         public UserService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("http://localhost:5031");
+            _httpClient.BaseAddress = new Uri("http://localhost:5286");
         }
 
         public async Task<IEnumerable<User>> GetAllUser()
