@@ -12,5 +12,6 @@ namespace OrderApi.Services
         Task<IEnumerable<User>> GetAllUser();
         Task<User> GetUserByName(string username);
         Task UpdateUserBalance(UserUpdateBalance userUpdateBalance);
+        Task UpdateUserBackBalance(UserUpdateBalance userUpdateBalance);
     }
 }

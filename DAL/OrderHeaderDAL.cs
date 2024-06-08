@@ -68,7 +68,7 @@ namespace OrderApi.DAL
         {
             using (SqlConnection conn = new SqlConnection(GetConnectionString()))
             {
-                var strSql = @"SELECT * FROM OrderHeaders ORDER BY OrderDate asc";
+                var strSql = @"SELECT * FROM OrderHeaders ORDER BY OrderDate DESC";
                 var OrderHeaders = conn.Query<OrderHeader>(strSql);
                 return OrderHeaders;
             }

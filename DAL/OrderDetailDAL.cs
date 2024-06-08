@@ -22,7 +22,22 @@ namespace OrderApi.DAL
         }
         public void Delete(int id)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            {
+                var strSql = @"DELETE FROM OrderDetails WHERE OrderDetailId = @OrderDetailId";
+                try
+                {
+                    conn.Execute(strSql, new { OrderDetailId = id });
+                }
+                catch (SqlException sqlEx)
+                {
+                    throw new ArgumentException($"Error: {sqlEx.Message} - {sqlEx.Number}");
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException($"Error: {ex.Message}");
+                }
+            }
         }
 
         IEnumerable<OrderDetail> ICrud<OrderDetail>.GetAll()

@@ -49,7 +49,7 @@ app.MapGet("/orderHeaders/{id}", (IOrderHeader orderHeader, int id) =>
     return Results.Ok(order);
 });
 
-app.MapPost("/orderHeaders", async (IOrderHeader orderHeader, IUserService userService, OrderHeaderDTO obj) =>
+app.MapPost("/orderHeaders", async (IOrderHeader orderHeader, IUserService userService, OrderHeaderDTO obj, IProductService productService) =>
 {
     try
     {
@@ -114,6 +114,7 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
             Quantity = obj.Quantity,
             Price = obj.Price
         };
+
         orderDetail.Insert(detail);
         var productUpdateStockDto = new ProductUpdateStockDto
         {
@@ -121,15 +122,12 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
             Quantity = obj.Quantity
         };
 
-        // if (obj.Price > userUpdateBalance.Balance )
-        // {
-        //     return Results.BadRequest("Stock not enough");
-        // }
         var userUpdateBalance = new UserUpdateBalance
         {
             UserName = order.UserName,
             Balance = obj.Price
         };
+
 
         await productService.UpdateProductStock(productUpdateStockDto);
         await userService.UpdateUserBalance(userUpdateBalance);
@@ -141,55 +139,29 @@ app.MapPost("/orderDetails", async (IOrderDetail orderDetail, IProductService pr
     }
 });
 
-app.MapPut("/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetail obj, IOrderHeader orderHeader, IUserService userService) =>
+app.MapPut("/cancle/orderDetails", async (IOrderDetail orderDetail, IProductService productService, OrderDetail obj, IOrderHeader orderHeader, IUserService userService) =>
 {
     try
     {
-        var product = await productService.GetProductById(obj.ProductId);
-        if (product == null)
-        {
-            return Results.BadRequest("Product not found");
-        }
-        if (product.quantity < obj.Quantity)
-        {
-            return Results.BadRequest("Stock not enough");
-        }
-        var order = orderHeader.GetById(obj.OrderHeaderId);
-        if (order == null)
-        {
-            return Results.BadRequest("Order Header not found");
-        }
-        obj.Price = obj.Quantity * product.price;
-        OrderDetail detail = new OrderDetail
-        {
-            OrderHeaderId = obj.OrderHeaderId,
-            ProductId = obj.ProductId,
-            Quantity = obj.Quantity,
-            Price = obj.Price
-        };
-        orderDetail.Update(obj);
-
-        var productUpdateStockDto = new ProductUpdateStockDto
-        {
-            ProductID = obj.ProductId,
-            Quantity = obj.Quantity
-        };
+        var details = orderDetail.GetById(obj.OrderDetailId);
+        var order = orderHeader.GetById(details.OrderHeaderId);
         var userUpdateBalance = new UserUpdateBalance
         {
             UserName = order.UserName,
-            Balance = obj.Price
+            Balance = details.Price
         };
-        await productService.UpdateProductStock(productUpdateStockDto);
-        await userService.UpdateUserBalance(userUpdateBalance);
-        return Results.Created($"/orderDetails/{detail.OrderDetailId}", detail);
 
-        return Results.Created($"/orderDetails/{obj.OrderDetailId}", obj);
+        orderDetail.Delete(details.OrderDetailId);
+        await userService.UpdateUserBackBalance(userUpdateBalance);
+        return Results.Ok(new { Message = "Success Cancle", userUpdateBalance});
     }
     catch (Exception ex)
     {
         return Results.BadRequest(ex.Message);
     }
 });
+
+
 
 app.Run();
 

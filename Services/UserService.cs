@@ -47,13 +47,13 @@ namespace OrderApi.Services
                 var user = JsonSerializer.Deserialize<User>(results);
                 if (user == null)
                 {
-                    throw new ArgumentException("Cannot get User");
+                    throw new ArgumentException("Cannot get Users");
                 }
                 return user;
             }
             else
             {
-                throw new ArgumentException($"Cannot get User - httpstatus: {response.StatusCode}");
+                throw new ArgumentException($"Cannot get Users - httpstatus: {response.StatusCode}");
             }
         }
 
@@ -64,7 +64,17 @@ namespace OrderApi.Services
             var response = await _httpClient.PutAsync("/users/updatebalance", data);
             if (!response.IsSuccessStatusCode)
             {
-                throw new ArgumentException($"Cannot update product stock - httpstatus: {response.StatusCode}");
+                throw new ArgumentException($"Cannot update User Balance - httpstatus: {response.StatusCode}");
+            }
+        }
+        public async Task UpdateUserBackBalance(UserUpdateBalance userUpdateBalance)
+        {
+            var json = JsonSerializer.Serialize(userUpdateBalance);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync("/users/updateBackBalance", data);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ArgumentException($"Cannot update User Balance - httpstatus: {response.StatusCode}");
             }
         }
     }
