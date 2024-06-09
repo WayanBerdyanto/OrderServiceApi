@@ -8,13 +8,11 @@ namespace OrderApi.DAL
     public class OrderHeaderDAL : IOrderHeader
     {
         private readonly IConfiguration _config;
+        private readonly Connect _conn;
         public OrderHeaderDAL(IConfiguration config)
         {
             _config = config;
-        }
-        private string GetConnectionString()
-        {
-            return @"Data Source=.\SQLEXPRESS;Initial Catalog=OrderDb;Integrated Security=True";
+            _conn = new Connect(_config);
         }
         public void Delete(int id)
         {
@@ -23,7 +21,7 @@ namespace OrderApi.DAL
 
         public void Insert(OrderHeader obj)
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (SqlConnection conn = _conn.GetConnectDb())
             {
                 var strSql = @"INSERT INTO OrderHeaders (UserName, OrderDate) VALUES (@UserName, @OrderDate); select @@IDENTITY";
                 var param = new
@@ -48,10 +46,10 @@ namespace OrderApi.DAL
 
         public void Update(OrderHeader obj)
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (SqlConnection conn = _conn.GetConnectDb())
             {
                 var strSql = @"UPDATE OrderHeaders SET UserName = @UserName, OrderDate = @OrderDate";
-                var param = new { UserName = obj.UserName, OrderDate = obj.OrderDate};
+                var param = new { UserName = obj.UserName, OrderDate = obj.OrderDate };
                 try
                 {
                     var newId = conn.ExecuteScalar<string>(strSql, param);
@@ -66,7 +64,7 @@ namespace OrderApi.DAL
 
         IEnumerable<OrderHeader> ICrud<OrderHeader>.GetAll()
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (SqlConnection conn = _conn.GetConnectDb())
             {
                 var strSql = @"SELECT * FROM OrderHeaders ORDER BY OrderDate DESC";
                 var OrderHeaders = conn.Query<OrderHeader>(strSql);
@@ -76,16 +74,24 @@ namespace OrderApi.DAL
 
         public OrderHeader GetById(int id)
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (SqlConnection conn = _conn.GetConnectDb())
             {
                 var strSql = @"SELECT * FROM OrderHeaders WHERE OrderHeaderId = @OrderHeaderId";
                 var param = new { OrderHeaderId = id };
-                var orderHeader = conn.QueryFirstOrDefault<OrderHeader>(strSql, param);
-                if (orderHeader == null)
+                try
                 {
-                    throw new ArgumentException("Data tidak ditemukan");
+                    var orderHeader = conn.QueryFirstOrDefault<OrderHeader>(strSql, param);
+                    return orderHeader;
+
                 }
-                return orderHeader;
+                catch (SqlException sqlEx)
+                {
+                    throw new ArgumentException($"Error: {sqlEx.Message} - {sqlEx.Number}");
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException($"Error: {ex.Message}");
+                }
             }
         }
     }

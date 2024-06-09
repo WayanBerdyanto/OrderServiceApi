@@ -7,7 +7,7 @@ namespace OrderApi.DTO
 {
     public class OrderHeaderCreateDTO
     {
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
         public DateTime OrderDate { get; set; }
     }
 }

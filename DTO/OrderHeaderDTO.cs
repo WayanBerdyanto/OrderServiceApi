@@ -7,9 +7,8 @@ namespace OrderApi.DTO
 {
     public class OrderHeaderDTO
     {
-        public int OrderHeaderID { get; set; }
-        public string username { get; set; }
-
+        public int OrderHeaderId { get; set; }
+        public string? UserName { get; set; }
         public DateTime OrderDate { get; set; }
     }
 }

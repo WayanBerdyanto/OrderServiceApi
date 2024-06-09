@@ -7,12 +7,12 @@ using Dapper;
 
 namespace OrderApi.DAL
 {
-    public class Connection
+    public class Connect
     {
         private readonly IConfiguration _config;
         private readonly SqlConnection _connection;
 
-        public Connection(IConfiguration config)
+        public Connect(IConfiguration config)
         {
             _config = config;
             _connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));

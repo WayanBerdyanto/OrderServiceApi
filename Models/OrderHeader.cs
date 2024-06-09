@@ -7,7 +7,7 @@ namespace OrderApi.Models
 {
     public class OrderHeader
     {
-        public int OrderHeaderID { get; set; }
+        public int OrderHeaderId { get; set; }
         public string? UserName { get; set; }
         public DateTime OrderDate { get; set; }
     }

@@ -38,7 +38,7 @@ app.MapGet("/orderHeaders", (IOrderHeader orderHeader) =>
     return Results.Ok(orderHeader.GetAll());
 });
 
-app.MapGet("/orderHeaders/{id}", (IOrderHeader orderHeader, int id) =>
+app.MapGet("/orderHeaders/{id}", (int id, IOrderHeader orderHeader) =>
 {
 
     var order = orderHeader.GetById(id);
@@ -46,25 +46,31 @@ app.MapGet("/orderHeaders/{id}", (IOrderHeader orderHeader, int id) =>
     {
         return Results.NotFound();
     }
-    return Results.Ok(order);
+    OrderHeaderDTO orderDto = new OrderHeaderDTO
+    {
+        OrderHeaderId = order.OrderHeaderId,
+        UserName = order.UserName,
+        OrderDate = order.OrderDate
+    };
+    return Results.Ok(orderDto);
 });
 
 app.MapPost("/orderHeaders", async (IOrderHeader orderHeader, IUserService userService, OrderHeaderDTO obj, IProductService productService) =>
 {
     try
     {
-        var user = await userService.GetUserByName(obj.username);
+        var user = await userService.GetUserByName(obj.UserName);
         if (user == null)
         {
             return Results.BadRequest("data not found");
         }
         OrderHeader order = new OrderHeader
         {
-            UserName = obj.username,
+            UserName = obj.UserName,
             OrderDate = obj.OrderDate,
         };
         orderHeader.Insert(order);
-        return Results.Created($"/orderHeaders/{obj.OrderHeaderID}", order);
+        return Results.Created($"/orderHeaders/{obj.OrderHeaderId}", order);
     }
     catch (Exception ex)
     {
@@ -163,7 +169,7 @@ app.MapPut("/cancle/orderDetails", async (IOrderDetail orderDetail, IProductServ
         orderDetail.Delete(details.OrderDetailId);
         await productService.UpdateStokCancleAsync(productUpdateStockDto);
         await userService.UpdateUserBackBalance(userUpdateBalance);
-        return Results.Ok(new { Message = "Success Cancle"});
+        return Results.Ok(new { Message = "Success Cancle" });
     }
     catch (Exception ex)
     {

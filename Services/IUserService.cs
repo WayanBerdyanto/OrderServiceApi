@@ -9,8 +9,8 @@ namespace OrderApi.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAllUser();
-        Task<User> GetUserByName(string username);
+        Task<IEnumerable<Users>> GetAllUser();
+        Task<Users> GetUserByName(string username);
         Task UpdateUserBalance(UserUpdateBalance userUpdateBalance);
         Task UpdateUserBackBalance(UserUpdateBalance userUpdateBalance);
     }

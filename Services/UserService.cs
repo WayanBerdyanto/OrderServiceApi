@@ -19,13 +19,13 @@ namespace OrderApi.Services
             _httpClient.BaseAddress = new Uri("http://localhost:5286");
         }
 
-        public async Task<IEnumerable<User>> GetAllUser()
+        public async Task<IEnumerable<Users>> GetAllUser()
         {
             var response = await _httpClient.GetAsync("/users");
             if (response.IsSuccessStatusCode)
             {
                 var results = await response.Content.ReadAsStringAsync();
-                var user = JsonSerializer.Deserialize<IEnumerable<User>>(results);
+                var user = JsonSerializer.Deserialize<IEnumerable<Users>>(results);
                 if (user == null)
                 {
                     throw new ArgumentException("Cannot get users");
@@ -38,13 +38,13 @@ namespace OrderApi.Services
             }
         }
 
-        public async Task<User> GetUserByName(string username)
+        public async Task<Users> GetUserByName(string username)
         {
             var response = await _httpClient.GetAsync($"/users/{username}");
             if (response.IsSuccessStatusCode)
             {
                 var results = await response.Content.ReadAsStringAsync();
-                var user = JsonSerializer.Deserialize<User>(results);
+                var user = JsonSerializer.Deserialize<Users>(results);
                 if (user == null)
                 {
                     throw new ArgumentException("Cannot get Users");
