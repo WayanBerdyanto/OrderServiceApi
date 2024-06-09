@@ -12,5 +12,6 @@ namespace OrderApi.Services
         Task<IEnumerable<Product>> GetAllProducts();
         Task<Product> GetProductById(int id);
         Task UpdateProductStock(ProductUpdateStockDto productUpdateStockDto);
+        Task UpdateStokCancleAsync(ProductUpdateStockDto productUpdateStockDto);
     }
 }

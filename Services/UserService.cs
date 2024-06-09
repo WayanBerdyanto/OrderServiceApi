@@ -74,7 +74,7 @@ namespace OrderApi.Services
             var response = await _httpClient.PutAsync("/users/updateBackBalance", data);
             if (!response.IsSuccessStatusCode)
             {
-                throw new ArgumentException($"Cannot update User Balance - httpstatus: {response.StatusCode}");
+                throw new ArgumentException($"Cannot Cancle update User Balance - httpstatus: {response.StatusCode}");
             }
         }
     }

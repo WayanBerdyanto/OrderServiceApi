@@ -145,15 +145,25 @@ app.MapPut("/cancle/orderDetails", async (IOrderDetail orderDetail, IProductServ
     {
         var details = orderDetail.GetById(obj.OrderDetailId);
         var order = orderHeader.GetById(details.OrderHeaderId);
+        var product = await productService.GetProductById(details.ProductId);
+        if (product == null)
+        {
+            return Results.BadRequest("Product not found");
+        }
         var userUpdateBalance = new UserUpdateBalance
         {
             UserName = order.UserName,
             Balance = details.Price
         };
-
+        var productUpdateStockDto = new ProductUpdateStockDto
+        {
+            ProductID = details.ProductId,
+            Quantity = details.Quantity
+        };
         orderDetail.Delete(details.OrderDetailId);
+        await productService.UpdateStokCancleAsync(productUpdateStockDto);
         await userService.UpdateUserBackBalance(userUpdateBalance);
-        return Results.Ok(new { Message = "Success Cancle", userUpdateBalance});
+        return Results.Ok(new { Message = "Success Cancle"});
     }
     catch (Exception ex)
     {

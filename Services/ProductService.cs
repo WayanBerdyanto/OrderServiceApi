@@ -68,5 +68,16 @@ namespace OrderApi.Services
                 throw new ArgumentException($"Cannot update product stock - httpstatus: {response.StatusCode}");
             }
         }   
+
+        public async Task UpdateStokCancleAsync(ProductUpdateStockDto productUpdateStockDto)
+        {
+            var json = JsonSerializer.Serialize(productUpdateStockDto);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync("/api/products/updatecanclestock", data);
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new ArgumentException($"Cannot update product stock - httpstatus: {response.StatusCode}");
+            }
+        }   
     }
 }
